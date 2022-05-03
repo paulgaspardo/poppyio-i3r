@@ -48,9 +48,17 @@ input, textarea {
 #image {
    text-align: center;
 }
-#mform, #afterUpload, #message, #image {
+#mform, #afterUpload, #message {
    padding: 1rem;
+}
+#image img {
+   padding-left: 1rem;
+   padding-right: 1rem;
+   padding-top: 1rem;
 }
 .hidden {
    display: none;
+}
+#buttons {
+   text-align: center;
 }

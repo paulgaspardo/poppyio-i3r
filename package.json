@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "next": "12.1.6",
+    "node-fetch": "^3.2.4",
+    "poppyio": "https://js.poppy.io/0.1.0-20220428155200083.volvox/poppyio-0.1.0-20220428155200083.volvox.tgz",
+    "raw-body": "^2.5.1",
     "react": "18.1.0",
     "react-dom": "18.1.0"
   },
