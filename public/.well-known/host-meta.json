@@ -2,7 +2,7 @@
    "links": [
       {
          "rel": "https://what.poppy.io/Service-1",
-         "href": "/uploader"
+         "href": "/upload-dialog"
       }
    ]
 }
