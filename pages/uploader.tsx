@@ -7,7 +7,7 @@ export default function Uploader() {
    let [title, setTitle] = useState('');
    let [description, setDescription] = useState('');
 
-   let [performUpload, setPerformUpload] = useState<FormEventHandler[]>([]);
+   let [performUpload, setPerformUpload] = useState<((title: string, description: string) => void)[]>([]);
    let [uploadStatus, setUploadStatus] = useState<'before'|'during'|'after'>('before');
 
    let [viewLink, setViewLink] = useState<string|undefined>(undefined);
@@ -38,13 +38,12 @@ export default function Uploader() {
             setTitle(envelope.title);
          }
          if (typeof envelope.description === 'string') {
-            setTitle(envelope.description);
+            setDescription(envelope.description);
          }
          setMessage('Generating thumbnail...');
          parent.innerHTML == '';
 
-         let performUpload = async (ev: FormEvent) => {
-            ev.preventDefault();
+         let performUpload = async (title: string, description: string) => {
             setUploadStatus('during');
             setMessage('Uploading to imgur...');
             let result = await submitUpload(envelope.blob, title, description);
@@ -100,7 +99,7 @@ export default function Uploader() {
    let uploader = <div id="uploader">
          <div id="message">{message}</div>
          <div id="image" ref={thumbnailRef}/>
-         <form id="mform" onSubmit={performUpload[0]}>
+         <form id="mform" onSubmit={ev => { ev.preventDefault(); if (performUpload[0]) performUpload[0](title, description) }}>
             <fieldset className={disabledClass}>
                <label htmlFor="title">Title</label>
                <input id="title" disabled={disabled} type="text" value={title} onChange={e => setTitle(e.target.value)}/>
@@ -119,7 +118,7 @@ export default function Uploader() {
 
    let afterUpload = <div id='afterUpload'>
       <p>Your image was uploaded successfully.</p>
-      <p>These links were sent back to the client, but in case you don't see them there:</p>
+      <p>These links were sent back to the client, but in case you don&apos;t see them there:</p>
       <p>You can view it on imgur at <code>{viewLink}</code></p>                        
       <p>Save this link if you want to delete the image: <code>{deleteLink}</code></p>
       <button className='close' onClick={() => ModalService.close()}>done - close and return to client</button>
