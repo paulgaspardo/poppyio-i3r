@@ -1,0 +1,56 @@
+/* body, html {
+   height: 100%;
+   margin: 0;
+   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+   background-color: #404040;
+} */
+#__next {
+   display: flex;
+   flex-direction: column;
+   margin: auto;
+   height: 100%;
+   max-width: 400px;
+}
+#body {
+   margin: auto;
+   border: 1px solid black;
+   border-radius: 3px;
+   background-color: white;
+   color: #202020;
+}
+h1 {
+   font-size: 1.2rem;
+   font-weight: normal;
+   margin: 0;
+   border-bottom: 1px solid #cccccc;
+   padding: 1rem;
+}
+h1 strong {
+   font-size: 1.3rem;
+}
+fieldset {
+   border: 0;
+   display: block;
+   margin: 0;
+   padding: 0;
+}
+label, #buttons {
+   display: block;
+   font-size: 0.8rem;
+   margin-top: 0.8rem;
+}
+input, textarea {
+   width: 100%;
+}
+.disabled {
+   opacity: 0.5;
+}
+#image {
+   text-align: center;
+}
+#mform, #afterUpload, #message, #image {
+   padding: 1rem;
+}
+.hidden {
+   display: none;
+}
