@@ -10,7 +10,7 @@
     "postinstall": "next build"
   },
   "engines": {
-    "node": ">= 16"
+    "node": ">= 16.0.0"
   },
   "dependencies": {
     "next": "12.1.6",
