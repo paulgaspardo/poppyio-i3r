@@ -1,0 +1,12 @@
+{
+   "name": "Poppy.io i3r",
+   "description": "A Poppy I/O service for uploading images to Imgur",
+   "repository": "https://github.com/paulgaspardo/poppyio-i3r",
+   "logo": "https://node-js-sample.herokuapp.com/node.png",
+   "keywords": ["node", "express", "static"],
+   "env": {
+      "IMGUR_CLIENT_ID": {
+         "description": "Imgur API Client ID"
+      }
+   }
+ }
