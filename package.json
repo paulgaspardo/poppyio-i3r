@@ -9,6 +9,9 @@
     "lint": "next lint",
     "postinstall": "next build"
   },
+  "engines": {
+    "node": ">= 16"
+  },
   "dependencies": {
     "next": "12.1.6",
     "node-fetch": "^3.2.4",
