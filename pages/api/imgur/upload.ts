@@ -9,36 +9,43 @@ export const config = {
    }
 };
 
-let uploadLoopRunning = false;
-let uploadQueue: [NextApiRequest,NextApiResponse][] = [];
-let uploadsRemaining = 0;
+let uploadsAllowed = 0;
 let nextCreditCheckAt = 0;
-
-function updateUploadsRemaining(clientRemaining: any, postRemaining: any, postsReset: any, userRemaining: any, userReset: any) {
-   console.log(Date.now(), 'updating uploads remaining from', clientRemaining, postRemaining, postsReset, userRemaining, userReset);
-   uploadsRemaining = Math.floor(parseInt(clientRemaining || '0') / 10);
-   uploadsRemaining = Math.min(uploadsRemaining, Math.floor(parseInt(userRemaining || '0') / 10));   
-   if (postRemaining) {
-      uploadsRemaining = Math.min(uploadsRemaining, parseInt(postRemaining || '0'));
+function updateRateLimitInfo(responseHeadersOrCreditsApiData: {get(key:string):string|null|undefined}) {
+   let get = (key: string) => responseHeadersOrCreditsApiData.get(key) || responseHeadersOrCreditsApiData.get('x-ratelimit-' + key.toLowerCase());
+   uploadsAllowed = Math.floor(parseInt(get('ClientRemaining') || '0') / 10);
+   uploadsAllowed = Math.min(uploadsAllowed, Math.floor(parseInt(get('UserRemaining') || '0') / 10));
+   let postsRemaining = get('x-post-rate-limit-remaining');
+   if (typeof postsRemaining === 'string') {
+      uploadsAllowed = Math.min(uploadsAllowed, parseInt(postsRemaining));
    }
-   nextCreditCheckAt = Date.now() + parseInt(postsReset || '0') * 1000;
-   nextCreditCheckAt = Math.min(nextCreditCheckAt, parseInt(userReset || '0') * 1000);
-   console.log('now', uploadsRemaining, nextCreditCheckAt);
+   nextCreditCheckAt = Date.now() + parseInt(get('x-post-rate-limit-reset') || '0') * 1000;
+   nextCreditCheckAt = Math.min(nextCreditCheckAt, parseInt(get('UserReset') || '0') * 1000);
+   console.log('now', uploadsAllowed, nextCreditCheckAt);
 }
 
-export default async function upload(req: NextApiRequest, res: NextApiResponse) {
-   uploadQueue.push([req, res]);
-   if (uploadLoopRunning) {
+let uploadQueue: [NextApiRequest,NextApiResponse][] = [];
+export default function upload(req: NextApiRequest, res: NextApiResponse) {
+   return new Promise<void>(resolve => {
+      res.on('close', resolve);
+      uploadQueue.push([req, res]);
+      startUploadFiberIfNotRunning();
+   });
+}
+
+let uploadFiberRunning = false;
+async function startUploadFiberIfNotRunning() {
+   if (uploadFiberRunning) {
       return;
    }
    try {
-      uploadLoopRunning = true;
+      uploadFiberRunning = true;
       while (uploadQueue.length > 0) {
          let batch = uploadQueue;
          uploadQueue = [];
          for (let [req, res] of batch) {
             try {
-               if (uploadsRemaining <= 0 && Date.now() >= nextCreditCheckAt) {
+               if (uploadsAllowed <= 0 && Date.now() >= nextCreditCheckAt) {
                   console.log('needs credit check');
                   try {
                      let creditCheck = await fetch('https://api.imgur.com/3/credits', {
@@ -46,39 +53,24 @@ export default async function upload(req: NextApiRequest, res: NextApiResponse) 
                            authorization: 'Client-ID ' + clientId
                         }
                      });
-                     creditCheck.headers.forEach((val, key) => {
-                        console.log(key, val);
-                     });
                      if (creditCheck.status !== 200) {
                         throw new Error('https://api.imgur.com/3/credits returned ' + creditCheck.status);
                      }
                      let { data } = await creditCheck.json();
-                     updateUploadsRemaining(
-                        data.ClientRemaining,
-                        null,
-                        null,
-                        data.UserRemaining,
-                        data.UserReset
-                     );
+                     updateRateLimitInfo(new Map(Object.entries(data as {[key:string]:string})));
                   } catch (e) {
                      console.error(e);
                      nextCreditCheckAt = Date.now() + 15 * 60 * 1000;
                   }
                }
-               if (uploadsRemaining < 0) {
+               if (uploadsAllowed <= 0) {
                   console.log('reached upload limit');
                   res.status(503).send({ retryIn: Math.floor((nextCreditCheckAt - Date.now())/1000 + Math.random() * 60 ) });
                } else {
-                  uploadsRemaining--;
+                  uploadsAllowed--;
                   let uploadHeaders = await handleUpload(req, res);
                   if (uploadHeaders) {
-                     updateUploadsRemaining(
-                        uploadHeaders.get('x-ratelimit-clientremaining'),
-                        uploadHeaders.get('x-post-rate-limit-remaining'),
-                        uploadHeaders.get('x-post-rate-limit-reset'),
-                        uploadHeaders.get('x-ratelimit-userremaining'),
-                        uploadHeaders.get('x-ratelimit-userreset')
-                     );
+                     updateRateLimitInfo(uploadHeaders);
                   }
                }
             } catch (e) {
@@ -87,15 +79,14 @@ export default async function upload(req: NextApiRequest, res: NextApiResponse) 
             }
          }
       }
-      uploadLoopRunning = false;
+      uploadFiberRunning = false;
    } catch (e) {
-      console.error('uncaught error in upload loop', e);
+      console.error('uncaught error in upload fiber', e);
       process.exit(1);
    }
 }
 
 async function handleUpload(req: NextApiRequest, res: NextApiResponse): Promise<Headers|undefined> {
-
    try {
       if (!clientId) {
          console.error('upload failed, no IMGUR_CLIENT_ID environment variable');
@@ -118,7 +109,6 @@ async function handleUpload(req: NextApiRequest, res: NextApiResponse): Promise<
          return uploadResult.headers;
       }
       let responseText = await uploadResult.text();
-      console.log('responseText', responseText);
       res.status(200);
       res.setHeader('content-type', uploadResult.headers.get('content-type')!);
       res.send(responseText);

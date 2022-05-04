@@ -1,6 +1,6 @@
 import Head from "next/head";
-import { PeerOffer, ModalService, ModalServiceRequest } from "poppyio";
-import { EventHandler, FormEvent, FormEventHandler, useCallback, useEffect, useRef, useState } from "react";
+import { PeerOffer, ModalService } from "poppyio";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 
 export default function UploadDialog() {
    let [viewLink, setViewLink] = useState<string>();
@@ -30,7 +30,7 @@ function UploadForm(props: { setLinks: (viewLink: string, deleteLink: string) =>
    let { setLinks } = props;
    let [message, setMessage] = useState('Waiting for request...');
    let [imageBlob, setImageBlob] = useState<Blob>();
-   let [imageWorks, setImageWorks] = useState(false);
+   let [hasValidImage, setHasValidImage] = useState(false);
 
    let [title, setTitle] = useState('');
    let [description, setDescription] = useState('');
@@ -78,13 +78,18 @@ function UploadForm(props: { setLinks: (viewLink: string, deleteLink: string) =>
       });
       return () => { if (resolveExchange) resolveExchange() }
    }, [setLinks]);
+   useEffect(() => {
+      if (imageBlob) {
+         setMessage('Generating thumbnail...');
+         setHasValidImage(false);
+      }
+   }, [imageBlob]);
    let thumbnailLoaded = () => {
       setMessage('Ready for upload');
-      setImageWorks(true);
+      setHasValidImage(true);
    };
    let thumbnailFailed = () => {
       setMessage('Image failed to load; probably not supported');
-      setImageWorks(false);
    };
 
    let performUpload = async (ev: FormEvent) => {
@@ -127,7 +132,7 @@ function UploadForm(props: { setLinks: (viewLink: string, deleteLink: string) =>
       }
    };
 
-   let disabled = working || !imageWorks;
+   let disabled = working || !hasValidImage;
    let disabledClass = disabled ? 'disabled' : undefined;
 
    return <div id="uploader">
