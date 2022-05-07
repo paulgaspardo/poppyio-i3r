@@ -1,7 +1,7 @@
 {
    "links": [
       {
-         "rel": "https://what.poppy.io/Service-1",
+         "rel": "https://js.poppy.io/a/ModalService",
          "href": "/upload-dialog"
       }
    ]
