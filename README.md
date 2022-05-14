@@ -19,9 +19,9 @@ specfically the **REGISTRATION QUICKSTART** section.
 
 You'll be prompted for your Imgur API key when setting it up.
 For domain-based service discovery use the `.herokuapp.com` domain
-you pick:
+for the app name you pick:
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https%3A%2F%2Fgithub.com%2Fpaulgaspardo%2Fpoppyio-i3r)
 
 ## Running it locally
 
