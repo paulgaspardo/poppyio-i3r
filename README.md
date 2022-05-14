@@ -1,8 +1,39 @@
+# Poppy.io i3r
+
+This is a Poppy I/O Service for anonymously uploading images
+to Imgur. To run it, you'll have to supply an Imgur Client ID
+in the `IMGUR_CLIENT_ID` environment variable.
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+Although the Imgur API would work entirely client side, this
+proxies the upload requests through a server to avoid hitting
+Imgur API rate limits.
 
-First, run the development server:
+## Getting an Imgur Client ID
+
+Refer to the [Imgur API documentation](https://apidocs.imgur.com),
+specfically the **REGISTRATION QUICKSTART** section.
+
+## Deploying to Heroku
+
+You'll be prompted for your Imgur API key when setting it up.
+For domain-based service discovery use the `.herokuapp.com` domain
+you pick:
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
+## Running it locally
+
+Optionally, create a `.env.local` file at the root of the project (next to this README) and add you Imgur Client ID
+to it (or you can just set the environment variable through
+the shell):
+
+```
+IMGUR_CLIENT_ID=1234567890abcdef
+```
+
+To run the development server:
 
 ```bash
 npm run dev
@@ -10,25 +41,23 @@ npm run dev
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The service page URL will be http://localhost:3000/upload-dialog
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+### Using with ngrok
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+To allow domain-based service discovery to work, the service
+must be running on an HTTPS URL. The easiest way to do that is
+to use something like [ngrok](https://ngrok.com) (free
+with registration) to expose it to the internet.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+Run ngrok with:
 
-## Learn More
+```bash
+ngrok http 3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+Use the `.ngrok.io` domain in the forwarding URL (for example `9dc1-5-135-235-227.eu.ngrok.io` here):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```
+Forwarding     https://9dc1-5-135-235-227.eu.ngrok.io -> http://localhost:3000                                                    
+```
