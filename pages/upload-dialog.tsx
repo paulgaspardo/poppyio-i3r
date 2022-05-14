@@ -47,12 +47,12 @@ function UploadForm(props: { setLinks: (viewLink: string, deleteLink: string) =>
       }
       let result = await request.open({
         accepting: 'content-blob',
-        using: (offer: PeerOffer) => new Promise<void>(resolve => {
+        using: (offer: PeerOffer, postReply: (reply: any) => Promise<boolean>) => new Promise<void>(resolve => {
           let envelope = offer.data[0];
           if (envelope && envelope.blob instanceof Blob) {
             setImageBlob(envelope.blob);
             setCompleteRequest(() => async (viewLink: string, deleteLink: string) => {
-              await offer.postResult({
+              await postReply({
                 links: [
                   { title: 'View Image', href: viewLink },
                   { title: 'Delete Image', href: deleteLink }
